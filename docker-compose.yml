@@ -1,0 +1,20 @@
+#version: '3.8'
+services:
+  app_wrk_flow_db:
+    build: 
+      context: ./dkr/postgres
+      dockerfile: Dockerfile
+    container_name: cnt_app_wrk_flow_db
+    image: img_app_wrk_flow_db
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      TZ: 'Asia/Kolkata'
+      PGTZ: 'Asia/Kolkata'
+      VIRTUAL_HOST: db.app_wrk_flow.local
+      POSTGRES_DB: app_wrk_flw_db
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: simplegrid
+    volumes:
+      - ../App_data/postgres/data:/var/lib/postgresql/data
