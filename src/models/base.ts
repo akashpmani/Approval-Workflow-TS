@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prismaClient';
-
-const prisma = new PrismaClient();
+import { prisma } from '../configs/db'
 
 async function ensureDbConnection(): Promise<boolean> {
     let connection_success = false;
@@ -11,8 +9,6 @@ async function ensureDbConnection(): Promise<boolean> {
     } catch (error) {
         connection_success = false;
         console.error("DB Connection failed:", error);
-    } finally {
-        await prisma.$disconnect();
     }
 
     return connection_success;
