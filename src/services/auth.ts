@@ -3,6 +3,7 @@ import { signupSchema, loginSchema } from '../schemas/authSchema'
 import { UserModel } from '../models/user'
 import bcrypt from 'bcrypt'
 import { error } from 'node:console'
+import { generateToken } from 'src/configs/jwt'
 
 type SignupInput = z.infer<typeof signupSchema>
 type LoginInput = z.infer<typeof loginSchema>
@@ -28,6 +29,7 @@ export class AuthService {
         if (!isMatch) throw new Error('Invalid credentials')
                 
         const { password, ...userWithoutPassword } = user
-        return { user: userWithoutPassword }
+        const token = generateToken({ id: user.id, username: user.username, email: user.email})
+        return { token,user: userWithoutPassword }
     }
 }
