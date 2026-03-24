@@ -14,9 +14,9 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
 
-    "baseUrl": "./src",
+    "baseUrl": ".",
     "paths": {
-      "@prismaClient": ["prisma/generated/prisma/index"]
+      "@prismaClient": ["prisma/generated/client"]
     }
   },
   "include": ["src/**/*.ts"],
