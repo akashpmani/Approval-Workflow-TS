@@ -1,17 +1,12 @@
 import { prisma } from '../configs/db'
 
-async function ensureDbConnection(): Promise<boolean> {
-    let connection_success = false;
-
+async function ensureDbConnection(): Promise<void> {
     try {
-        await prisma.$queryRaw`SELECT 1`;
-        connection_success = true;
+        await prisma.$connect();
+        await prisma.$executeRaw`SELECT 1`; 
     } catch (error) {
-        connection_success = false;
         console.error("DB Connection failed:", error);
+        throw error;
     }
-
-    return connection_success;
 }
-
 export default ensureDbConnection;
