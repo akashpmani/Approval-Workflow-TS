@@ -1,15 +1,24 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "module": "commonjs",
-    "outDir": "./dist",
+
     "rootDir": "./src",
+    "outDir": "./dist",
+
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "type" : "module"
+
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+
+    "baseUrl": "./src",
+    "paths": {
+      "@prismaClient": ["prisma/generated/prisma/index"]
+    }
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist"]
 }
