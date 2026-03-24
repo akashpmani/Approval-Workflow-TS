@@ -1,22 +1,47 @@
-// models/user.model.ts
+// models/po.model.ts
 import { prisma } from '../configs/db'
 import { z } from 'zod'
+import { poSchema } from '../schemas/poSchema'
 
+type PoInput = z.infer<typeof poSchema>
 
 export class PoModel {
-    getOne = async () => {
-        return prisma.purchaseOrder.findFirst()
-    };
+    getOne = async (id: number) => {
+        return prisma.purchaseOrder.findUnique({
+        where: { id },
+        include: { poitems: true }
+        })
+    }
 
     getAll = async () => {
-        return prisma.purchaseOrder.findFirst()
-    };
+        return prisma.purchaseOrder.findMany({
+        select: {
+            id: true,
+            vendor: true,
+            payment_amount: true,
+            payment_mode: true,
+            status: true,
+            created_at: true,
+        }
+        })
+    }
 
-    create = async () => {
-        return prisma.purchaseOrder.findFirst()
-    };
+    create = async (data: PoInput, userId: number) => {
+        return prisma.purchaseOrder.create({
+        data: {
+            ...data,
+            requested_by: userId,
+            items: {
+            create: data.items 
+            }
+        }
+        })
+    }
 
-    update = async () => {
-        return prisma.purchaseOrder.findFirst()
-    };
+    update = async (id: number, status: 'APPROVED' | 'REJECTED') => {
+        return prisma.purchaseOrder.update({
+        where: { id },
+        data: { status }
+        })
+    }
 }

@@ -18,5 +18,5 @@ export const poSchema = z.object({
 });
 
 export const poApproveOrRejectSchema = z.object({
-    id: z.string().min(1, "No id provided")
+    id: z.number()
 })
