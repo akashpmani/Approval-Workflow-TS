@@ -9,6 +9,7 @@ export type TokenPayload = {
     id: number
     username: string
     email: string
+    role: string
 }
 
 export const generateToken = (payload: TokenPayload): string => {
@@ -17,10 +18,5 @@ export const generateToken = (payload: TokenPayload): string => {
 
 export const verifyToken = (token: string): TokenPayload => {
     const decoded = jwt.verify(token, ACCESS_SECRET)
-
-    // if (typeof decoded === 'string') {
-    //     throw new Error('Invalid token')
-    // }
-
     return decoded as TokenPayload
 }
