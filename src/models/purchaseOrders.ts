@@ -26,13 +26,26 @@ export class PoModel {
         })
     }
 
-    create = async (data: PoInput, userId: number) => {
+    create = async (data: PoInput, userId: number, extra: { po_number: string }) => {
+        const { items, ...poData } = data
+        console.log(items)
+        let daata =  {
+            ...poData,
+            ...extra,
+            requested_by_id: userId,
+            poitems: {
+            create: items
+            }
+        }
+
+        console.log(daata)
         return prisma.purchaseOrder.create({
         data: {
-            ...data,
-            requested_by: userId,
-            items: {
-            create: data.items 
+            ...poData,
+            ...extra,
+            requested_by_id: userId,
+            poitems: {
+            create: items
             }
         }
         })

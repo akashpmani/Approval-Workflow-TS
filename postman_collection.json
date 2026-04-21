@@ -1,0 +1,284 @@
+{
+  "info": {
+    "name": "Approval Workflow API",
+    "description": "Postman collection for testing Approval Workflow API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"johndoe\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"9876543210\",\n  \"password\": \"Password123\",\n  \"role\": \"USER\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register",
+                ""
+              ]
+            },
+            "description": "Register a new user account"
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"john@example.com\",\n  \"password\": \"Password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login",
+                ""
+              ]
+            },
+            "description": "Login with email or phone and password"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Test Endpoints",
+      "item": [
+        {
+          "name": "Test Allowany",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"test\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/test/allowany/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "test",
+                "allowany",
+                ""
+              ]
+            },
+            "description": "Test endpoint without authentication"
+          },
+          "response": []
+        },
+        {
+          "name": "Test Authenticated",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "description": "JWT token from login response"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"authenticated test\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/test/authenticated/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "test",
+                "authenticated",
+                ""
+              ]
+            },
+            "description": "Test endpoint with JWT authentication"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Purchase Orders",
+      "item": [
+        {
+          "name": "Get All Purchase Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/purchaseorder",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "purchaseorder"
+              ]
+            },
+            "description": "Get all purchase orders"
+          },
+          "response": []
+        },
+        {
+          "name": "Create PO Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "description": "JWT token from login response"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vendor\": \"ABC Supplies Inc\",\n  \"vendor_address\": \"123 Business St, City, State 12345\",\n  \"payment_mode\": \"BANK_TRANSFER\",\n  \"payment_amount\": 5000,\n  \"payment_reference\": \"REF123456\",\n  \"items\": [\n    {\n      \"item\": \"STATIONERY\",\n      \"quantity\": 100,\n      \"rate\": 25\n    },\n    {\n      \"item\": \"OFFICE_SUPPLIES\",\n      \"quantity\": 50,\n      \"rate\": 40\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/purchaseorder/manage/request/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "purchaseorder",
+                "manage",
+                "request",
+                ""
+              ]
+            },
+            "description": "Create a new purchase order request (requires authentication)"
+          },
+          "response": []
+        },
+        {
+          "name": "Approve PO",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "description": "JWT token from login response"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/purchaseorder/manage/approve/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "purchaseorder",
+                "manage",
+                "approve",
+                ""
+              ]
+            },
+            "description": "Approve a purchase order by ID (requires authentication)"
+          },
+          "response": []
+        },
+        {
+          "name": "Reject PO",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "description": "JWT token from login response"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/purchaseorder/manage/reject/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "purchaseorder",
+                "manage",
+                "reject",
+                ""
+              ]
+            },
+            "description": "Reject a purchase order by ID (requires authentication)"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "Base URL of the API server"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT token obtained from login endpoint"
+    }
+  ]
+}

@@ -1,18 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
+import { ErrorHandler } from 'src/utils/errorhandler';
 
-class ErrorHandler extends Error {
-    statusCode: number;
-    message: string;
-
-    constructor(statusCode: number, message: string) {
-        super();
-        this.statusCode = statusCode;
-        this.message = message;
-    }
-}
 
 const handleError = (err: ErrorHandler, req: Request, res: Response, next: NextFunction) => {
-    const { statusCode, message } = err;
+    console.log(err.statusCode)
+    console.log(err.message)
+    const statusCode = typeof err?.statusCode === 'number' ? err.statusCode : 500;
+    const message = err?.message || 'Internal Server Error';
     res.status(statusCode).json({
         status: 'error',
         statusCode,
@@ -20,4 +14,4 @@ const handleError = (err: ErrorHandler, req: Request, res: Response, next: NextF
     });
 };
 
-export { ErrorHandler, handleError };
+export { handleError };

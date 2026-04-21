@@ -84,22 +84,22 @@ model User {
 //purchase approvals
 model PurchaseOrder {
   id                 Int            @id @default(autoincrement())
-  po_number          String         @unique
+  po_number          String         @unique @default(cuid())
   vendor             String
   vendor_address     String?
-  status             PurchaseStatus
+  status             PurchaseStatus @default(REQUESTED)
   payment_mode       PaymentModes
   payment_amount     Decimal
   payment_reference  String
   additional_details Json?
 
-  requested_at    DateTime
+  requested_at    DateTime @default(now())
   requested_by    User     @relation("po_req_user", fields: [requested_by_id], references: [id])
   requested_by_id Int
 
-  approved_at    DateTime
-  approved_by    User     @relation("po_app_user", fields: [approved_by_id], references: [id]) // User who is approving or rejecting
-  approved_by_id Int // User who is approving or rejecting
+  approved_at    DateTime?
+  approved_by    User?    @relation("po_app_user", fields: [approved_by_id], references: [id])
+  approved_by_id Int?  // User who is approving or rejecting
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt

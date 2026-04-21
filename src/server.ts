@@ -6,7 +6,7 @@ const PORT = 3000;
 (async () => {
     try {
         await ensureDbConnection();
-        console.clear();
+        // console.clear();
 
         app.listen(PORT, () => {
             console.log(`Server is Listening on port ${PORT}`);
