@@ -13,7 +13,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Link } from "react-router-dom"
+import { Link } from "@tanstack/react-router"
 
 export function LoginForm({
   className,
@@ -46,7 +46,7 @@ export function LoginForm({
               <Field>
                 <Button type="submit">Login</Button>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <Link to={"/signup"}>Sign up</Link>
+                  Don&apos;t have an account? <Link to="/auth/signup">Sign up</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>

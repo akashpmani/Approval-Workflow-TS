@@ -19,7 +19,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { DotsThreeVerticalIcon,SignOutIcon } from "@phosphor-icons/react"
-import { Link } from "react-router-dom"
 
 export function NavUser({
   user,
@@ -78,7 +77,7 @@ export function NavUser({
             <DropdownMenuGroup>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem render={<Link to={"/login"} />}>
+            <DropdownMenuItem render={<a href="/login" />}>
               <SignOutIcon
               />
               Log out
