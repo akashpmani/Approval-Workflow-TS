@@ -1,0 +1,122 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRoles {
+  HR
+  MANAGER
+  USER
+}
+
+enum PurchaseStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+}
+
+enum PaymentModes {
+  CASH
+  CARD
+  DIGITAL
+}
+
+enum Items {
+  LAPTOP
+  KEYBOARD
+  MOUSE
+  MONITOR
+}
+
+enum ExpenseClaimsStatus {
+  REQUESTED
+  APPROVED
+  CLAIMED
+  REJECTED
+}
+
+enum LeaveRequestStatus {
+  REQUESTED
+  APPROVED
+  CANCELLED
+  REJECTED
+}
+
+enum LeaveTypes {
+  SICK_LEAVE
+  CASUAL_LEAVE
+  LOSS_OF_PAY
+}
+
+//user model
+model User {
+  id         Int     @id @default(autoincrement())
+  email      String  @unique
+  username   String  @unique
+  password   String
+  first_name String?
+  last_name  String?
+  phone      String? @unique
+
+  is_active   Boolean @default(true)
+  is_verified Boolean @default(false)
+
+  role UserRoles @default(USER)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  po_req_user PurchaseOrder[] @relation("po_req_user")
+  po_app_user PurchaseOrder[] @relation("po_app_user")
+
+  @@map("user")
+}
+
+//purchase approvals
+model PurchaseOrder {
+  id                 Int            @id @default(autoincrement())
+  po_number          String         @unique @default(cuid())
+  vendor             String
+  vendor_address     String?
+  status             PurchaseStatus @default(REQUESTED)
+  payment_mode       PaymentModes
+  payment_amount     Decimal
+  payment_reference  String
+  additional_details Json?
+
+  requested_at    DateTime @default(now())
+  requested_by    User     @relation("po_req_user", fields: [requested_by_id], references: [id])
+  requested_by_id Int
+
+  approved_at    DateTime?
+  approved_by    User?     @relation("po_app_user", fields: [approved_by_id], references: [id])
+  approved_by_id Int? // User who is approving or rejecting
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  poitems POItems[]
+
+  @@index([id, po_number])
+  @@map("purchase_order")
+}
+
+model POItems {
+  id            Int           @id @default(autoincrement())
+  master_ref    PurchaseOrder @relation(fields: [master_ref_id], references: [id])
+  master_ref_id Int
+  item          Items
+  quantity      Int
+  rate          Decimal
+
+  @@map("purchase_order_items")
+}
