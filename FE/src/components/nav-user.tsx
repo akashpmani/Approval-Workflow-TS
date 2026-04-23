@@ -18,7 +18,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { DotsThreeVerticalIcon,SignOutIcon } from "@phosphor-icons/react"
+import { EllipsisVertical,LogOut } from "lucide-react"
+import { Link } from "@tanstack/react-router"
 
 export function NavUser({
   user,
@@ -49,7 +50,7 @@ export function NavUser({
                 {user.email}
               </span>
             </div>
-            <DotsThreeVerticalIcon className="ml-auto size-4" />
+            <EllipsisVertical className="ml-auto size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="min-w-56"
@@ -77,8 +78,8 @@ export function NavUser({
             <DropdownMenuGroup>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem render={<a href="/login" />}>
-              <SignOutIcon
+            <DropdownMenuItem render={<Link to="/auth/login" />} >
+              <LogOut
               />
               Log out
             </DropdownMenuItem>

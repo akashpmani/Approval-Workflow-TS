@@ -1,0 +1,14 @@
+{
+  "name": "approval-workflow-root",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "BE",
+    "FE"
+  ],
+  "scripts": {
+    "build:shared": "npm run build -w @approval/shared",
+    "dev:be": "npm run dev -w approval-workflow-ts",
+    "dev:fe": "npm run dev -w fe"
+  }
+}

@@ -1,18 +1,24 @@
-/**
- * authStore.ts — global auth state.
- *
- * Purpose:
- *   Holds the currently signed-in user and token, exposes login/logout
- *   actions, and notifies subscribed components on change.
- *
- * Typical contents:
- *   - State: { user, token, isAuthenticated }
- *   - Actions: login(user, token), logout()
- *   - Token persistence via localStorage (key from constants/STORAGE_KEYS)
- *   - A React hook (useAuthStore) with selector support
- *
- * Implementation options:
- *   - Zustand (recommended — tiny, no boilerplate)
- *   - Redux Toolkit (if the project grows a lot of state)
- *   - Plain useSyncExternalStore for zero dependencies
- */
+import { create } from "zustand"
+import { persist } from "zustand/middleware"
+import type { AuthUser } from "@approval/shared/schemas/auth"
+
+type AuthState = {
+  user: AuthUser | null
+  token: string | null
+  isAuthenticated: boolean
+  login: (user: AuthUser, token: string) => void
+  logout: () => void
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      login: (user, token) => set({ user, token, isAuthenticated: true }),
+      logout: () => set({ user: null, token: null, isAuthenticated: false }),
+    }),
+    { name: "auth" },
+  ),
+)

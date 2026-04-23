@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { SquaresFourIcon, CommandIcon, ListIcon } from "@phosphor-icons/react"
+import { LayoutGrid, Command, List } from "lucide-react"
 
 const data = {
   user: {
@@ -23,12 +23,12 @@ const data = {
     {
       title: "Dashboard",
       url: "/",
-      icon: <SquaresFourIcon />,
+      icon: <LayoutGrid />,
     },
     {
       title: "Purchase Orders",
-      url: "/purchase-orders",
-      icon: <ListIcon />,
+      url: "/purchase-order/",
+      icon: <List />,
     },
   ],
 }
@@ -42,7 +42,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:p-1.5!"
               render={<a href="#" />}
             >
-              <CommandIcon className="size-5!" />
+              <Command className="size-5!" />
               <span className="text-base font-semibold">Acme Inc.</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
