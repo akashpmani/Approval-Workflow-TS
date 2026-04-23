@@ -15,11 +15,12 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Link } from "@tanstack/react-router"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2 } from "lucide-react"
-import { loginSchema } from "@approval/shared/schemas/auth"
+
+import { useForm } from "react-hook-form"
 import type { LoginInput } from "@/features/auth/types"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { loginSchema } from "@approval/shared/schemas/auth"
 import { useLogin } from "@/features/auth/hooks/useAuth"
 
 export function LoginForm({
@@ -28,14 +29,7 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const login = useLogin()
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { identifier: "", password: "" },
-  })
+  const {register,handleSubmit,formState: { errors },} = useForm<LoginInput>({resolver: zodResolver(loginSchema),defaultValues: { identifier: "", password: "" },})
 
   const onSubmit = handleSubmit((values) => login.mutate(values))
 
