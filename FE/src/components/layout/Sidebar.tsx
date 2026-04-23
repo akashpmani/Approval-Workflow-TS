@@ -6,7 +6,7 @@
  *
  * Typical contents:
  *   - NAV array of { label, path, icon, allowedRoles? }
- *   - Map over NAV and render <NavLink> (react-router-dom) for each
+ *   - Map over NAV and render <Link> (@tanstack/react-router) for each
  *   - Filter items by role from useAuth() if needed
  *
  * Paths should come from routes/paths.ts — never hardcoded.

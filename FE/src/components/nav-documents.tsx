@@ -16,7 +16,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { DotsThreeOutlineIcon, FolderIcon, ShareIcon, TrashIcon } from "@phosphor-icons/react"
+import { Ellipsis, Folder, Share2, Trash2 } from "lucide-react"
 
 export function NavDocuments({
   items,
@@ -47,7 +47,7 @@ export function NavDocuments({
                   />
                 }
               >
-                <DotsThreeOutlineIcon
+                <Ellipsis
                 />
                 <span className="sr-only">More</span>
               </DropdownMenuTrigger>
@@ -57,18 +57,18 @@ export function NavDocuments({
                 align={isMobile ? "end" : "start"}
               >
                 <DropdownMenuItem>
-                  <FolderIcon
+                  <Folder
                   />
                   <span>Open</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <ShareIcon
+                  <Share2
                   />
                   <span>Share</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem variant="destructive">
-                  <TrashIcon
+                  <Trash2
                   />
                   <span>Delete</span>
                 </DropdownMenuItem>
@@ -78,7 +78,7 @@ export function NavDocuments({
         ))}
         <SidebarMenuItem>
           <SidebarMenuButton className="text-sidebar-foreground/70">
-            <DotsThreeOutlineIcon className="text-sidebar-foreground/70" />
+            <Ellipsis className="text-sidebar-foreground/70" />
             <span>More</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
