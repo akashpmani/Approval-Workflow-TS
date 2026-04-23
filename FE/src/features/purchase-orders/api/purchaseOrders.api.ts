@@ -1,15 +1,19 @@
-/**
- * features/purchase-orders/api/purchaseOrders.api.ts — PO HTTP calls.
- *
- * Purpose:
- *   All network calls for purchase orders, using the shared apiClient.
- *
- * Typical endpoints:
- *   - list(params)       GET    /purchase-orders
- *   - getById(id)        GET    /purchase-orders/:id
- *   - create(payload)    POST   /purchase-orders
- *   - update(id, body)   PATCH  /purchase-orders/:id
- *   - approve(id)        POST   /purchase-orders/:id/approve
- *   - reject(id, reason) POST   /purchase-orders/:id/reject
- *   - remove(id)         DELETE /purchase-orders/:id
- */
+import { apiGet, apiPost } from "@/lib/api-client"
+import type { POInput,PurchaseOrder,POApproveOrRejectInput } from "@approval/shared/schemas/purchase-order"
+
+export const purchaseOrdersApi = {
+  create: (payload: POInput) =>
+    apiPost<PurchaseOrder>("purchaseorder/manage/request/", payload),
+
+  approve : (payload: POApproveOrRejectInput) =>
+    apiPost("purchaseorder/manage/approve/", payload),
+
+  reject : (payload: POApproveOrRejectInput) =>
+    apiPost("purchaseorder/manage/reject/", payload),
+
+  getAll : () =>
+    apiGet<PurchaseOrder[]>("purchaseorder/"),
+
+  getByID : (id: string) =>
+    apiGet<PurchaseOrder[]>("purchaseorder/?id=" + id),
+}
