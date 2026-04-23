@@ -4,6 +4,7 @@ import {
   PurchaseStatus,
   type PurchaseStatus as PurchaseStatusType,
 } from "@approval/shared/constants/enums"
+import type { PurchaseOrder } from "@approval/shared/schemas/purchase-order"
 
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
@@ -17,10 +18,7 @@ import {
 } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-import {
-  mockPurchaseOrders,
-  type MockPurchaseOrder,
-} from "../mock/mockPurchaseOrders"
+import { useGetPurchaseOrders } from "../hooks/usePurchaseOrders"
 import POCreateModel from "./POCreateModel"
 import PODetailModel from "./PODetailModel"
 
@@ -30,8 +28,9 @@ const TABS: { value: PurchaseStatusType; label: string }[] = [
   { value: PurchaseStatus.REJECTED, label: "Rejected" },
 ]
 
-function formatCurrency(value: number) {
-  return `$${value.toLocaleString(undefined, {
+function formatCurrency(value: number | string) {
+  const n = Number(value)
+  return `$${n.toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`
@@ -41,21 +40,19 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString()
 }
 
-export default function PurchaseOrder() {
-  const [selected, setSelected] = useState<MockPurchaseOrder | null>(null)
+export default function PurchaseOrderList() {
+
+  const [activeTab, setActiveTab] = useState<PurchaseStatusType>(
+    PurchaseStatus.REQUESTED
+  )
+  const { data: orders = [], isLoading, isError } = useGetPurchaseOrders(activeTab)
+  const [selected, setSelected] = useState<PurchaseOrder | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
 
-  const openDetail = (order: MockPurchaseOrder) => {
+  const openDetail = (order: PurchaseOrder) => {
     setSelected(order)
     setDetailOpen(true)
   }
-
-  const counts: Record<PurchaseStatusType, number> = {
-    [PurchaseStatus.REQUESTED]: 0,
-    [PurchaseStatus.APPROVED]: 0,
-    [PurchaseStatus.REJECTED]: 0,
-  }
-  for (const po of mockPurchaseOrders) counts[po.status]++
 
   return (
     <div className="flex flex-col gap-4 p-4 lg:p-6">
@@ -69,34 +66,43 @@ export default function PurchaseOrder() {
         <POCreateModel />
       </div>
 
-      <Tabs defaultValue={PurchaseStatus.REQUESTED} className="w-full">
-        <TabsList>
-          {TABS.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value}>
-              {tab.label}
-              <Badge variant="secondary" className="ml-2">
-                {counts[tab.value]}
-              </Badge>
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      {isLoading ? (
+        <div className="text-muted-foreground p-8 text-center text-sm">
+          Loading purchase orders…
+        </div>
+      ) : isError ? (
+        <div className="text-destructive p-8 text-center text-sm">
+          Failed to load purchase orders.
+        </div>
+      ) : (
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as PurchaseStatusType)}
+          className="w-full"
+        >
+          <TabsList>
+            {TABS.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value}>
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-        {TABS.map((tab) => (
-          <TabsContent key={tab.value} value={tab.value} className="mt-4">
-            <Card className="p-0 overflow-hidden">
-              <POTable
-                orders={mockPurchaseOrders.filter(
-                  (po) => po.status === tab.value
-                )}
-                onRowClick={openDetail}
-              />
-            </Card>
-          </TabsContent>
-        ))}
-      </Tabs>
+          {TABS.map((tab) => (
+            <TabsContent key={tab.value} value={tab.value} className="mt-4">
+              <Card className="p-0 overflow-hidden">
+                <POTable
+                  orders={orders.filter((po) => po.status === tab.value)}
+                  onRowClick={openDetail}
+                />
+              </Card>
+            </TabsContent>
+          ))}
+        </Tabs>
+      )}
 
       <PODetailModel
-        order={selected}
+        order={selected as PurchaseOrder}
         open={detailOpen}
         onOpenChange={setDetailOpen}
       />
@@ -108,8 +114,8 @@ function POTable({
   orders,
   onRowClick,
 }: {
-  orders: MockPurchaseOrder[]
-  onRowClick: (order: MockPurchaseOrder) => void
+  orders: PurchaseOrder[]
+  onRowClick: (order: PurchaseOrder) => void
 }) {
   if (orders.length === 0) {
     return (
@@ -127,7 +133,6 @@ function POTable({
           <TableHead>Vendor</TableHead>
           <TableHead>Payment Mode</TableHead>
           <TableHead className="text-right">Amount</TableHead>
-          <TableHead>Reference</TableHead>
           <TableHead>Requested By</TableHead>
           <TableHead>Requested On</TableHead>
         </TableRow>
@@ -139,7 +144,9 @@ function POTable({
             onClick={() => onRowClick(order)}
             className="hover:bg-muted/50 cursor-pointer"
           >
-            <TableCell className="font-medium">{order.po_number}</TableCell>
+            <TableCell className="font-medium">
+              {order.po_number ?? "—"}
+            </TableCell>
             <TableCell>{order.vendor}</TableCell>
             <TableCell>
               <Badge variant="outline">{order.payment_mode}</Badge>
@@ -147,9 +154,8 @@ function POTable({
             <TableCell className="text-right">
               {formatCurrency(order.payment_amount)}
             </TableCell>
-            <TableCell>{order.payment_reference}</TableCell>
-            <TableCell>{order.requested_by_name}</TableCell>
-            <TableCell>{formatDate(order.requested_at)}</TableCell>
+            <TableCell>—</TableCell>
+            <TableCell>{formatDate(order.created_at)}</TableCell>
           </TableRow>
         ))}
       </TableBody>

@@ -44,5 +44,22 @@ export const purchaseOrderSchema = z.object({
   approved_by_id: z.number().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
+  requested_by : {
+    id: z.number(),
+    username: z.string()
+  }
 })
 export type PurchaseOrder = z.infer<typeof purchaseOrderSchema>
+
+export const purchaseOrderDetailSchema = purchaseOrderSchema.extend({
+  poitems: z.array(poItemSchema),
+  approved_by : {
+    id: z.number(),
+    username: z.string()
+  },
+  rejected_by : {
+    id: z.number(),
+    username: z.string()
+  }
+})
+export type PurchaseOrderDetail = z.infer<typeof purchaseOrderDetailSchema>

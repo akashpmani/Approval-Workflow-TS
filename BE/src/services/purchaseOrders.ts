@@ -62,12 +62,16 @@ export class PoService {
     return this.poModel.update(data.id, PurchaseStatus.REJECTED);
   };
 
-  get = async (data: { id?: number }) => {
-    if (data.id) {
-      const po = await this.poModel.getOne(data.id);
+  get = async (req: Request) => {
+    const po_id : null | number = req.query.id ? Number(req.query.id) : null;
+  const status: PurchaseStatus = req.query.status
+      ? PurchaseStatus[req.query.status as keyof typeof PurchaseStatus]
+      : PurchaseStatus.REQUESTED;
+    if (po_id) {
+      const po = await this.poModel.getOne(Number(po_id));
       if (!po) throw new ErrorHandler(400, "Purchase order not found");
       return po;
     }
-    return this.poModel.getAll();
+    return this.poModel.getAll(status);
   };
 }

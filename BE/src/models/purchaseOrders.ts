@@ -2,6 +2,7 @@
 import { prisma } from '../configs/db'
 import { z } from 'zod'
 import { poSchema } from '../schemas/poSchema'
+import { PurchaseStatus } from '@prismaClient'
 
 type PoInput = z.infer<typeof poSchema>
 
@@ -9,19 +10,41 @@ export class PoModel {
     getOne = async (id: number) => {
         return prisma.purchaseOrder.findUnique({
         where: { id },
-        include: { poitems: true }
+        include: { 
+            poitems: true,
+            requested_by: {
+                select: {
+                    id: true,
+                    username: true
+                }
+            },
+            approved_by: {
+                select: {
+                    id: true,
+                    username: true
+                }                   
+            },
+        }
         })
     }
 
-    getAll = async () => {
+    getAll = async (status : PurchaseStatus) => {
         return prisma.purchaseOrder.findMany({
+        where: { status },
         select: {
             id: true,
+            po_number: true,
             vendor: true,
             payment_amount: true,
             payment_mode: true,
             status: true,
             created_at: true,
+            requested_by : {
+                select: {
+                    id: true,
+                    username: true
+                }             
+            }
         }
         })
     }

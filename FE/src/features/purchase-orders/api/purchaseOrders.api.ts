@@ -1,5 +1,5 @@
 import { apiGet, apiPost } from "@/lib/api-client"
-import type { POInput,PurchaseOrder,POApproveOrRejectInput } from "@approval/shared/schemas/purchase-order"
+import type { POInput,PurchaseOrder,POApproveOrRejectInput ,PurchaseOrderDetail} from "@approval/shared/schemas/purchase-order"
 
 export const purchaseOrdersApi = {
   create: (payload: POInput) =>
@@ -11,9 +11,9 @@ export const purchaseOrdersApi = {
   reject : (payload: POApproveOrRejectInput) =>
     apiPost("purchaseorder/manage/reject/", payload),
 
-  getAll : () =>
-    apiGet<PurchaseOrder[]>("purchaseorder/"),
+  getAll : (status? : string ) =>
+    apiGet<PurchaseOrder[]>("purchaseorder/?status=" + (status ?? "")),
 
   getByID : (id: string) =>
-    apiGet<PurchaseOrder[]>("purchaseorder/?id=" + id),
+    apiGet<PurchaseOrderDetail>("purchaseorder/?id=" + id),
 }

@@ -1,7 +1,4 @@
-import { PurchaseStatus } from "@approval/shared/constants/enums"
-
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogClose,
@@ -21,28 +18,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-import type { MockPurchaseOrder } from "../mock/mockPurchaseOrders"
-
-type Props = {
-  order: MockPurchaseOrder | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
-
-const statusVariant: Record<
-  MockPurchaseOrder["status"],
-  "secondary" | "default" | "destructive"
-> = {
-  [PurchaseStatus.REQUESTED]: "secondary",
-  [PurchaseStatus.APPROVED]: "default",
-  [PurchaseStatus.REJECTED]: "destructive",
-}
-
-const statusLabel: Record<MockPurchaseOrder["status"], string> = {
-  [PurchaseStatus.REQUESTED]: "To Be Approved",
-  [PurchaseStatus.APPROVED]: "Approved",
-  [PurchaseStatus.REJECTED]: "Rejected",
-}
+import type { POItem, PurchaseOrder } from "@approval/shared/schemas/purchase-order"
+import { PurchaseStatus } from "@approval/shared/constants/enums"
+import { useGetPurchaseOrderByID } from "../hooks/usePurchaseOrders"
 
 function formatCurrency(value: number) {
   return `$${value.toLocaleString(undefined, {
@@ -56,114 +34,139 @@ function formatDateTime(iso: string | null) {
   return new Date(iso).toLocaleString()
 }
 
-export default function PODetailModel({ order, open, onOpenChange }: Props) {
-  if (!order) return null
+type Props = {
+  order: PurchaseOrder
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
 
-  const itemsTotal = order.items.reduce(
-    (sum, i) => sum + i.quantity * i.rate,
-    0
+export default function PODetailModel({ order, open, onOpenChange }: Props) {
+  const { data, isLoading, isError } = useGetPurchaseOrderByID(
+    order ? String(order.id) : ""
   )
+  const poDetail = data
+
+  const itemsTotal = 
+    poDetail?.poitems.reduce(
+      (sum: number, line: POItem) => sum + line.quantity * line.rate,
+      0
+    ) ?? 0
+
+  if (!order) return null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center justify-between gap-3">
-            <DialogTitle>{order.po_number}</DialogTitle>
-            <Badge variant={statusVariant[order.status]}>
-              {statusLabel[order.status]}
-            </Badge>
-          </div>
+          <DialogTitle>{poDetail?.po_number ?? order.po_number}</DialogTitle>
           <DialogDescription>
             Purchase order details, line items, and approval trail.
           </DialogDescription>
         </DialogHeader>
 
-        <section className="grid grid-cols-2 gap-4 py-2 text-sm">
-          <DetailRow label="Vendor" value={order.vendor} />
-          <DetailRow
-            label="Vendor Address"
-            value={order.vendor_address ?? "—"}
-          />
-          <DetailRow label="Payment Mode" value={order.payment_mode} />
-          <DetailRow
-            label="Payment Amount"
-            value={formatCurrency(order.payment_amount)}
-          />
-          <DetailRow
-            label="Payment Reference"
-            value={order.payment_reference}
-          />
-          <DetailRow label="Requested By" value={order.requested_by_name} />
-          <DetailRow
-            label="Requested At"
-            value={formatDateTime(order.requested_at)}
-          />
-          <DetailRow
-            label="Approved By"
-            value={order.approved_by_name ?? "—"}
-          />
-          <DetailRow
-            label="Approved At"
-            value={formatDateTime(order.approved_at)}
-          />
-        </section>
-
-        <Separator />
-
-        <section className="flex flex-col gap-2">
-          <h3 className="text-sm font-semibold">Line Items</h3>
-          <div className="overflow-hidden rounded-none border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Item</TableHead>
-                  <TableHead className="text-right">Quantity</TableHead>
-                  <TableHead className="text-right">Rate</TableHead>
-                  <TableHead className="text-right">Line Total</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {order.items.map((line, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell className="font-medium">{line.item}</TableCell>
-                    <TableCell className="text-right">
-                      {line.quantity}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(line.rate)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(line.quantity * line.rate)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                <TableRow>
-                  <TableCell
-                    colSpan={3}
-                    className="text-right font-semibold"
-                  >
-                    Items Total
-                  </TableCell>
-                  <TableCell className="text-right font-semibold">
-                    {formatCurrency(itemsTotal)}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+        {isLoading ? (
+          <div className="text-muted-foreground p-8 text-center text-sm">
+            Loading purchase order…
           </div>
-        </section>
+        ) : isError || !poDetail ? (
+          <div className="text-destructive p-8 text-center text-sm">
+            Failed to load purchase order.
+          </div>
+        ) : (
+          <>
+            <section className="grid grid-cols-2 gap-4 py-2 text-sm">
+              <DetailRow label="Vendor" value={poDetail.vendor} />
+              <DetailRow
+                label="Vendor Address"
+                value={poDetail.vendor_address ?? "—"}
+              />
+              <DetailRow label="Payment Mode" value={poDetail.payment_mode} />
+              <DetailRow
+                label="Payment Amount"
+                value={formatCurrency(Number(poDetail.payment_amount))}
+              />
+              <DetailRow
+                label="Payment Reference"
+                value={poDetail.payment_reference}
+              />
+              <DetailRow
+                label="Requested By"
+                value={poDetail.requested_by?.username ?? "—"}
+              />
+              <DetailRow
+                label="Requested At"
+                value={formatDateTime(poDetail.requested_at)}
+              />
+              <DetailRow
+                label="Approved By"
+                value={poDetail.approved_by?.username ?? "—"}
+              />
+              <DetailRow
+                label="Approved At"
+                value={formatDateTime(poDetail.approved_at)}
+              />
+              <DetailRow
+                label="Rejected By"
+                value={poDetail.rejected_by?.username ?? "—"}
+              />
+              <DetailRow
+                label="Rejected At"
+                value={formatDateTime(poDetail.rejected_at)}
+              />
+            </section>
 
-        <DialogFooter className="mt-2">
-          {order.status === PurchaseStatus.REQUESTED ? (
-            <>
-              <Button variant="outline">Reject</Button>
-              <Button>Approve</Button>
-            </>
-          ) : (
-            <DialogClose render={<Button variant="outline">Close</Button>} />
-          )}
-        </DialogFooter>
+            <Separator />
+
+            <section className="flex flex-col gap-2">
+              <h3 className="text-sm font-semibold">Line Items</h3>
+              <div className="overflow-hidden rounded-none border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Item</TableHead>
+                      <TableHead className="text-right">Quantity</TableHead>
+                      <TableHead className="text-right">Rate</TableHead>
+                      <TableHead className="text-right">Line Total</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {poDetail.poitems.map((line: POItem, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell className="font-medium">{line.item}</TableCell>
+                        <TableCell className="text-right">{line.quantity}</TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(line.rate)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(line.quantity * line.rate)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-right font-semibold">
+                        Items Total
+                      </TableCell>
+                      <TableCell className="text-right font-semibold">
+                        {formatCurrency(itemsTotal)}
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+            </section>
+
+            <DialogFooter className="mt-2">
+              {poDetail.status === PurchaseStatus.REQUESTED ? (
+                <>
+                  <Button variant="outline">Reject</Button>
+                  <Button>Approve</Button>
+                </>
+              ) : (
+                <DialogClose render={<Button variant="outline">Close</Button>} />
+              )}
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   )

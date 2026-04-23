@@ -4,10 +4,10 @@ import { toast } from "sonner"
 import { ROUTES } from "@/routes/-paths"
 import { purchaseOrdersApi } from "../api/purchaseOrders.api"
 
-export function useGetPurchaseOrders() {
+export function useGetPurchaseOrders(status?: string) {
   return useQuery({
-    queryKey: ["purchaseOrders"],
-    queryFn: purchaseOrdersApi.getAll,
+    queryKey: ["purchaseOrders", status],
+    queryFn: () => purchaseOrdersApi.getAll(status),
   })
 }
 

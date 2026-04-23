@@ -6,12 +6,12 @@
  */
 
 import { AppShell } from "@/components/layout/AppShell"
-import PurchaseOrder from "@/features/purchase-orders/components/PurchaseOrder"
+import PurchaseOrderList from "@/features/purchase-orders/components/PurchaseOrder"
 
 export default function PurchaseOrders() {
   return (
     <AppShell>
-      <PurchaseOrder />
+      <PurchaseOrderList />
     </AppShell>
   )
 }
