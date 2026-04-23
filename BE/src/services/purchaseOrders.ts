@@ -6,6 +6,8 @@ import { UserRoles, PurchaseStatus } from "prisma/generated";
 import { createPONumber } from "src/utils/common";
 import { Request } from "express";
 import { ErrorHandler } from "src/utils/errorhandler";
+import { prisma } from "src/configs/db";
+import { PoListQuery } from "@approval/shared/schemas/purchase-order";
 
 type PoInput = z.infer<typeof poSchema>;
 type PoApproveOrRejectInput = z.infer<typeof poApproveOrRejectSchema>;
@@ -64,14 +66,34 @@ export class PoService {
 
   get = async (req: Request) => {
     const po_id : null | number = req.query.id ? Number(req.query.id) : null;
-  const status: PurchaseStatus = req.query.status
-      ? PurchaseStatus[req.query.status as keyof typeof PurchaseStatus]
-      : PurchaseStatus.REQUESTED;
     if (po_id) {
       const po = await this.poModel.getOne(Number(po_id));
       if (!po) throw new ErrorHandler(400, "Purchase order not found");
       return po;
     }
-    return this.poModel.getAll(status);
+
+    const status: PurchaseStatus = req.query.status
+      ? PurchaseStatus[req.query.status as keyof typeof PurchaseStatus]
+      : PurchaseStatus.REQUESTED;
+      const q: PoListQuery = {
+        page: req.query.page ? Number(req.query.page) : 1,
+        limit: req.query.limit ? Number(req.query.limit) : 10,
+        status,
+      };
+    const skip = (q.page - 1) * q.limit;
+
+    const { items, totalCount } = await this.poModel.getAll({
+        status: q.status, skip, take: q.limit,
+      });
+
+    return {
+        data: items,
+        pagination: {
+          page: q.page,
+          limit: q.limit,
+          totalCount,
+          totalPages: Math.ceil(totalCount / q.limit),
+        },
+    };
   };
 }

@@ -20,7 +20,11 @@ import {
 
 import type { POItem, PurchaseOrder } from "@approval/shared/schemas/purchase-order"
 import { PurchaseStatus } from "@approval/shared/constants/enums"
-import { useGetPurchaseOrderByID } from "../hooks/usePurchaseOrders"
+import {
+  useApprovePurchaseOrder,
+  useGetPurchaseOrderByID,
+  useRejectPurchaseOrder,
+} from "../hooks/usePurchaseOrders"
 
 function formatCurrency(value: number) {
   return `$${value.toLocaleString(undefined, {
@@ -45,6 +49,9 @@ export default function PODetailModel({ order, open, onOpenChange }: Props) {
     order ? String(order.id) : ""
   )
   const poDetail = data
+  const approveMutation = useApprovePurchaseOrder()
+  const rejectMutation = useRejectPurchaseOrder()
+  const isMutating = approveMutation.isPending || rejectMutation.isPending
 
   const itemsTotal = 
     poDetail?.poitems.reduce(
@@ -158,8 +165,29 @@ export default function PODetailModel({ order, open, onOpenChange }: Props) {
             <DialogFooter className="mt-2">
               {poDetail.status === PurchaseStatus.REQUESTED ? (
                 <>
-                  <Button variant="outline">Reject</Button>
-                  <Button>Approve</Button>
+                  <Button
+                    variant="outline"
+                    disabled={isMutating}
+                    onClick={() =>
+                      rejectMutation.mutate(
+                        { id: order.id },
+                        { onSuccess: () => onOpenChange(false) },
+                      )
+                    }
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    disabled={isMutating}
+                    onClick={() =>
+                      approveMutation.mutate(
+                        { id: order.id },
+                        { onSuccess: () => onOpenChange(false) },
+                      )
+                    }
+                  >
+                    Approve
+                  </Button>
                 </>
               ) : (
                 <DialogClose render={<Button variant="outline">Close</Button>} />

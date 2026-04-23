@@ -3,7 +3,9 @@ import {
   ITEM_VALUES,
   PAYMENT_MODE_VALUES,
   PURCHASE_STATUS_VALUES,
+  PurchaseStatus,
 } from "../constants/enums"
+import { da } from "zod/locales"
 
 export const poItemSchema = z.object({
   item: z.enum(ITEM_VALUES),
@@ -63,3 +65,22 @@ export const purchaseOrderDetailSchema = purchaseOrderSchema.extend({
   }
 })
 export type PurchaseOrderDetail = z.infer<typeof purchaseOrderDetailSchema>
+
+
+export const poListQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
+  status: z.enum(PurchaseStatus).default(PurchaseStatus.REQUESTED),
+  id: z.coerce.number().int().positive().optional(),
+  totalCount: z.coerce.number().int().min(0).default(0).optional(),
+  totalPages: z.coerce.number().int().min(0).default(0).optional(),
+});
+export type PoListQuery = z.infer<typeof poListQuerySchema>;
+
+
+export const poPaginatedResponseSchema = z.object({
+  data: z.array(purchaseOrderSchema),
+  pagination: poListQuerySchema
+})
+
+export type poPaginatedResponse<T> = z.infer<typeof poPaginatedResponseSchema>

@@ -7,6 +7,7 @@ import {
 import type { PurchaseOrder } from "@approval/shared/schemas/purchase-order"
 
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import {
   Table,
@@ -17,6 +18,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+const PAGE_SIZE = 10
 
 import { useGetPurchaseOrders } from "../hooks/usePurchaseOrders"
 import POCreateModel from "./POCreateModel"
@@ -45,7 +48,21 @@ export default function PurchaseOrderList() {
   const [activeTab, setActiveTab] = useState<PurchaseStatusType>(
     PurchaseStatus.REQUESTED
   )
-  const { data: orders = [], isLoading, isError } = useGetPurchaseOrders(activeTab)
+  const [page, setPage] = useState(1)
+  const { data: Paginated, isLoading, isError } = useGetPurchaseOrders({
+    status: activeTab,
+    page,
+    limit: PAGE_SIZE,
+  })
+
+  const orders = Paginated?.data ?? []
+  const pagination = Paginated?.pagination
+
+  const onTabChange = (v: string) => {
+    setActiveTab(v as PurchaseStatusType)
+    setPage(1)
+  }
+
   const [selected, setSelected] = useState<PurchaseOrder | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
 
@@ -77,7 +94,7 @@ export default function PurchaseOrderList() {
       ) : (
         <Tabs
           value={activeTab}
-          onValueChange={(v) => setActiveTab(v as PurchaseStatusType)}
+          onValueChange={onTabChange}
           className="w-full"
         >
           <TabsList>
@@ -92,7 +109,11 @@ export default function PurchaseOrderList() {
             <TabsContent key={tab.value} value={tab.value} className="mt-4">
               <Card className="p-0 overflow-hidden">
                 <POTable
-                  orders={orders.filter((po) => po.status === tab.value)}
+                  orders={orders}
+                  page={page}
+                  totalPages={pagination?.totalPages ?? 1}
+                  totalCount={pagination?.totalCount ?? 0}
+                  onPageChange={setPage}
                   onRowClick={openDetail}
                 />
               </Card>
@@ -112,9 +133,17 @@ export default function PurchaseOrderList() {
 
 function POTable({
   orders,
+  page,
+  totalPages,
+  totalCount,
+  onPageChange,
   onRowClick,
 }: {
   orders: PurchaseOrder[]
+  page: number
+  totalPages: number
+  totalCount: number
+  onPageChange: (page: number) => void
   onRowClick: (order: PurchaseOrder) => void
 }) {
   if (orders.length === 0) {
@@ -125,40 +154,68 @@ function POTable({
     )
   }
 
+  const safeTotalPages = Math.max(1, totalPages)
+
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>PO Number</TableHead>
-          <TableHead>Vendor</TableHead>
-          <TableHead>Payment Mode</TableHead>
-          <TableHead className="text-right">Amount</TableHead>
-          <TableHead>Requested By</TableHead>
-          <TableHead>Requested On</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {orders.map((order) => (
-          <TableRow
-            key={order.id}
-            onClick={() => onRowClick(order)}
-            className="hover:bg-muted/50 cursor-pointer"
-          >
-            <TableCell className="font-medium">
-              {order.po_number ?? "—"}
-            </TableCell>
-            <TableCell>{order.vendor}</TableCell>
-            <TableCell>
-              <Badge variant="outline">{order.payment_mode}</Badge>
-            </TableCell>
-            <TableCell className="text-right">
-              {formatCurrency(order.payment_amount)}
-            </TableCell>
-            <TableCell>—</TableCell>
-            <TableCell>{formatDate(order.created_at)}</TableCell>
+    <>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>PO Number</TableHead>
+            <TableHead>Vendor</TableHead>
+            <TableHead>Payment Mode</TableHead>
+            <TableHead className="text-right">Amount</TableHead>
+            <TableHead>Requested By</TableHead>
+            <TableHead>Requested On</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {orders.map((order) => (
+            <TableRow
+              key={order.id}
+              onClick={() => onRowClick(order)}
+              className="hover:bg-muted/50 cursor-pointer"
+            >
+              <TableCell className="font-medium">
+                {order.po_number ?? "—"}
+              </TableCell>
+              <TableCell>{order.vendor}</TableCell>
+              <TableCell>
+                <Badge variant="outline">{order.payment_mode}</Badge>
+              </TableCell>
+              <TableCell className="text-right">
+                {formatCurrency(order.payment_amount)}
+              </TableCell>
+              <TableCell>—</TableCell>
+              <TableCell>{formatDate(order.created_at)}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      <div className="flex items-center justify-between border-t p-3 text-sm">
+        <div className="text-muted-foreground">
+          Page {page} of {safeTotalPages} · {totalCount} total
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page <= 1}
+            onClick={() => onPageChange(Math.max(1, page - 1))}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= safeTotalPages}
+            onClick={() => onPageChange(Math.min(safeTotalPages, page + 1))}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+    </>
   )
 }
