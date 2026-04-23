@@ -16,13 +16,13 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Link } from "@tanstack/react-router"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 import { useForm } from "react-hook-form"
 import type { SignupInput } from "@/features/auth/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { signupSchema } from "@approval/shared/schemas/auth"
 import { useRegister } from "@/features/auth/hooks/useAuth"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { UserRoles } from "@approval/shared/constants/enums"
 
 
