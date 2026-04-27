@@ -1,15 +1,26 @@
-/**
- * features/purchase-orders/api/purchaseOrders.api.ts — PO HTTP calls.
- *
- * Purpose:
- *   All network calls for purchase orders, using the shared apiClient.
- *
- * Typical endpoints:
- *   - list(params)       GET    /purchase-orders
- *   - getById(id)        GET    /purchase-orders/:id
- *   - create(payload)    POST   /purchase-orders
- *   - update(id, body)   PATCH  /purchase-orders/:id
- *   - approve(id)        POST   /purchase-orders/:id/approve
- *   - reject(id, reason) POST   /purchase-orders/:id/reject
- *   - remove(id)         DELETE /purchase-orders/:id
- */
+import { apiGet, apiPost } from "@/lib/api-client"
+import type { POInput,PurchaseOrder,POApproveOrRejectInput } from "@approval/shared/schemas/purchase-order"
+import { type PurchaseOrderDetail, type poPaginatedResponse } from '../../../../../shared/schemas/purchase-order';
+
+export const purchaseOrdersApi = {
+  create: (payload: POInput) =>
+    apiPost<PurchaseOrder>("purchaseorder/manage/request/", payload),
+
+  approve : (payload: POApproveOrRejectInput) =>
+    apiPost("purchaseorder/manage/approve/", payload),
+
+  reject : (payload: POApproveOrRejectInput) =>
+    apiPost("purchaseorder/manage/reject/", payload),
+
+  getAll : (params: { status?: string; page: number; limit: number } ) =>{
+    const qs = new URLSearchParams({
+      page: String(params.page),
+      limit: String(params.limit),
+      ...(params.status ? { status: params.status } : {}),
+  });
+    return apiGet<poPaginatedResponse<PurchaseOrder>>(`purchaseorder/?${qs}`);
+},
+
+  getByID : (id: string) =>
+    apiGet<PurchaseOrderDetail>("purchaseorder/?id=" + id),
+}

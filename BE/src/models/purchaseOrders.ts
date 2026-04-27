@@ -2,6 +2,7 @@
 import { prisma } from '../configs/db'
 import { z } from 'zod'
 import { poSchema } from '../schemas/poSchema'
+import { PurchaseStatus } from '@prismaClient'
 
 type PoInput = z.infer<typeof poSchema>
 
@@ -9,22 +10,52 @@ export class PoModel {
     getOne = async (id: number) => {
         return prisma.purchaseOrder.findUnique({
         where: { id },
-        include: { poitems: true }
-        })
-    }
-
-    getAll = async () => {
-        return prisma.purchaseOrder.findMany({
-        select: {
-            id: true,
-            vendor: true,
-            payment_amount: true,
-            payment_mode: true,
-            status: true,
-            created_at: true,
+        include: { 
+            poitems: true,
+            requested_by: {
+                select: {
+                    id: true,
+                    username: true
+                }
+            },
+            approved_by: {
+                select: {
+                    id: true,
+                    username: true
+                }                   
+            },
         }
         })
     }
+
+    getAll = async (args: { status: PurchaseStatus; skip: number; take: number }) => {
+        const { status, skip, take } = args;
+        const [items, totalCount] = await prisma.$transaction([
+            prisma.purchaseOrder.findMany({
+            where: { status },
+            skip,
+            take,
+            orderBy: { created_at: "desc" },
+                select: {
+                    id: true,
+                    po_number: true,
+                    vendor: true,
+                    payment_amount: true,
+                    payment_mode: true,
+                    status: true,
+                    created_at: true,
+                    requested_by : {
+                        select: {
+                            id: true,
+                            username: true
+                        }             
+                    }
+                }
+            }),
+            prisma.purchaseOrder.count({ where: { status } }),
+        ]);
+        return { items, totalCount };
+        };
 
     create = async (data: PoInput, userId: number, extra: { po_number: string }) => {
         const { items, ...poData } = data
